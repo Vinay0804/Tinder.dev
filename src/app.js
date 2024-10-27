@@ -3,9 +3,16 @@ const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user")
 const {validateSignUpData} = require('./utils/validation');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
+const {Userauth} = require('./middlewares/auth');
+
+
+
 
 app.use(express.json());
+app.use(cookieParser());
 app.post("/signup", async(req,res)=>{
     try{
         validateSignUpData(req);
@@ -37,8 +44,11 @@ app.post("/login", async(req,res)=>{
     if(!email){
         throw new Error("Email id is not present in DB")
     }
-    const isPasswordValid = await bcrypt.compare(password,user.password)
+    const isPasswordValid = await user.validatePassword(password);
     if(isPasswordValid){
+
+        const token = await user.getJWT();
+        res.cookie("token",token);
         res.send("login successfull")
     }
     else{
@@ -49,6 +59,22 @@ app.post("/login", async(req,res)=>{
      res.status(400).send("ERROR : " + err.message);
    }
 })    
+app.get("/profile",Userauth, async(req,res)=>{
+    try{
+    const user = req.user;
+    
+    res.send(user); 
+    }catch(err){ res.status(400).send("ERROR :  "+ err.message);}
+})
+app.get("/requestsent",Userauth,async(req,res)=>{
+    try{
+        const user = req.user;
+        res.send(user.firstName + " send request")
+    }
+    catch(err){
+        res.status(400).send("ERROR : " + err.message);
+      }
+})
 
 app.get("/user",async(req,res)=>{
     const usermail = req.body.email;
