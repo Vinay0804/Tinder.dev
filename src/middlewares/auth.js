@@ -25,4 +25,4 @@ catch{
 }
 
 
-module.exports = {Userauth,}
+module.exports = Userauth;
