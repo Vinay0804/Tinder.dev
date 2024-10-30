@@ -10,6 +10,7 @@ const Userauth = async (req,res,next)=>{
 
   
    const decodeduser =  await jwt.verify(token, 'DEV-TINDER@VINAY');
+   console.log(decodeduser);
 
    const { id} =decodeduser;
    const user = await User.findById(id);
@@ -17,6 +18,7 @@ const Userauth = async (req,res,next)=>{
     throw new Error("User not found")
    }
    req.user = user;
+   console.log('Incoming Request:', req.method, req.originalUrl);
    next();
 }
 catch{
